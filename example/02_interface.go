@@ -13,7 +13,7 @@ type Cat struct {
 }
 
 func (cat Cat) run() string {
-    return "cat run";
+    return "cat run"
 }
 
 func (cat Cat) eat() string {
