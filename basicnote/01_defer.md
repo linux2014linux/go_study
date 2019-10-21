@@ -98,7 +98,7 @@ func printArr(score_users []int) {
     fmt.Println("\n ergodic slice before.")
   }()
 
-  for i := 0; i< len(score_users) + 1; i++ {
+  for i := 0; i < len(score_users) + 1; i++ {
     fmt.Print(score_users[i], " ")
   }
 
@@ -113,6 +113,7 @@ func printArr(score_users []int) {
  ergodic slice before.
 Recovered in function f runtime error: index out of range
 ```
+解析在发生索引越界时,栈中的 defer 函数从下往上依次是: "Recovered in function f", "\n ergodic slice before.",此时 "\n ergodic slice after." 还未入栈.
 defer必须在抛出异常之前出现,才会被执行.
 
 ##defer应用场景
@@ -139,6 +140,20 @@ func set(mu *sync.Mutex, arr []int, i, v int) {
 无论函数内发生什么,最终锁依然会被打开.
 ###异常捕获
 panic抛出异常,recover捕获异常.recover必须在defer语句中使用,直接调用recover无效.defer是异常框架的组成部分.
+```
+panic 是用来表示非常严重的不可恢复的错误的。在Go语言中这是一个内置函数，接收一个interface{}类型的值作为参数。panic 的作用就像我们平常接
+触的异常。不过Go可没有try…catch，所以，panic一般会导致程序挂掉（除非recover）。所以，Go语言中的异 常，那真的是异常了。你可以试试，调用
+panic看看，程序立马挂掉，然后Go运行时会打印出调用栈。但是，关键的一点是，即使函数执行的时候 panic了，函数不往下走了，运行时并不是立刻向上
+传递panic，而是到defer那，等defer的东西都跑完了，panic再向上传递。所以这时 候 defer 有点类似 try-catch-finally 中的 finally。
+```
+```
+panic的函数并不会立刻返回，而是先defer，再返回，如果有办法将panic捕获到，并阻止panic传递，就正常处理，如果没有没有捕获，程序直接异常终止.
+一旦panic，逻辑就会走到defer那，那我们就在defer那等着，调用recover函 数将会捕获到当前的panic（如果有的话），被捕获到的panic就不会向上传
+递了.
+```
+```
+不过要注意的是，recover之后，逻辑并不会恢复到panic那个点去，函数还是会在defer之后返回。
+```
 ```go
 package main
 
